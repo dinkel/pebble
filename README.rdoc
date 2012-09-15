@@ -1,0 +1,471 @@
+= Pebble -- A Simple Static CMS
+
+This package contains Pebble, a simple static CMS software.
+
+== Installation
+
+Pebble is available at Rubygems. You can install it with:
+
+  $ sudo gem install pebble
+
+== Source
+
+The Pebble source code is available at GitHub:
+<http://github.com/dinkel/pebble>.
+
+== Simple Example
+
+Once installed, you can run Pebble as follows ...
+
+  $ pebble [switches] [--] [src-dir] [dst-dir]
+
+Type <tt>pebble --help</tt> for an up-to-date option summary.
+
+Invoking <tt>pebble</tt> without any switches or targets causes Pebble to
+take the current working directory as <tt>src-dir</tt> and "rendered_[src-dir]" 
+as <tt>dst-dir</tt>.
+
+Assuming you ar in directory <tt>/home/user/website</tt>, the command 
+
+  $ pebble
+
+will render all <tt>*.html</tt> files in and under the CWD and save the result 
+in <tt>/home/user/rendered_website</tt>.
+
+== Guide
+
+=== Do you know that?
+
+You quickly set up a web-page for a small project. You need to make two more 
+pages and start 'copy-and-paste'-ing the page and quickly change the contents - 
+you still feel good. But after updating the links on every single page, 
+something in the back of your head whispers that it hates repetitive tasks. 
+Being a smart person you are considering a CMS. Is it really worth the hassle 
+(evaluating, setting up, configuring your server, database, etc.)? You discard 
+the idea (it is only 3 pages!), but still having a bad feeling ...
+
+Well, you might have found the solution: Pebble is a very easy to use static 
+content management system, being easy to install and learn. It aims to be as 
+unobstrusive as possible and by its nature (of rendering static pages) protects 
+you from all server configuring hassles. Ah, and it's non-geek! 
+
+=== Invocation
+
+Pebble is run on the command line. Here is the usage:
+
+  user@host:/home/user$ pebble --help
+  Usage: pebble [switches] [--] [src-dir] [dst-dir]
+  Switches:
+     --force (-f) - Overwrites "dst-dir" without asking
+     --help (-h) - display this help message
+     --version - display version string
+  Arguments:
+     src-dir (optional) - Current working directory is taken if omitted
+     dst-dir (optional) - Name of "src-dir" prefixed with "rendered_" if omitted
+
+The exact meaning of the above options will become obvious as soon as you start 
+using Pebble, which hopefully will happen right away. 
+
+=== Pages - a.k.a. Hello World!
+
+Let's consider you're having your website in directory 
+<tt>/home/user/website</tt> which looks as follows:
+
+  user@host:/home/user/website$ ls
+  index.html
+
+The file <tt>index.html</tt> looks like that:
+
+  user@host:/home/user/website$ cat index.html
+  <html>
+    <head>
+      <title>Web Project1</title>
+    </head>
+    <body>
+      <h1>Hello World!</h1>
+    </body>
+  </html> 
+  
+Now we invoke Pebble and see what happens.
+
+  user@host:/home/user/website$ pebble
+  user@host:/home/user/website$ ls
+  index.html
+  user@host:/home/user/website$ cd ../rendered_website/
+  user@host:/home/user/rendered_website$ ls
+  index.html
+  user@host:/home/user/rendered_website$ cat index.html 
+  <html>
+    <head>
+      <title>Web Project1</title>
+    </head>
+    <body>
+      <h1>Hello World!</h1>
+    </body>
+  </html>
+
+Invoking Pebble without parameters makes it assume that you want to work on the 
+current directory, so <tt>src-dir</tt> gets <tt>/home/user/website</tt> and 
+makes <tt>dst-dir</tt> to be <tt>/home/user/rendered_website</tt>. Pebble 
+rendered every page (which is "<tt>*.html</tt>") and saved a copy in 
+<tt>dst-dir</tt>. In this example it didn't change a single character in the 
+file <tt>index.html</tt>. This isn't a lot, but it wouldn't know what to change. 
+
+=== Layouts
+
+A layout in the Pebble terminology is a container around the actual contents of 
+a page, meaning everything that is static in different pages. In our example 
+file <tt>index.html</tt> this would be the whole HTML-head part. To build our 
+first layout in Pebble, let's create a file named <tt>default.layout</tt>: 
+
+  user@host:/home/user/website$ cat default.layout 
+  <html>
+    <head>
+      <title>Web Project1</title>
+    </head>
+    <body>
+      {{ content }}
+    </body>
+  </html>
+
+Instead of the "title"-line you now find the first tag known to Pebble: 
+<tt>{{ content }}</tt>. During rendering, this tag is replaced with the contents 
+of any HTML file, so we need to change the page <tt>index.html</tt> accordingly. 
+
+  user@host:/home/user/website$ cat index.html 
+  <h1>Hello World!</h1>
+
+We also want to create a page named <tt>goodbye.html</tt> with the following 
+content.
+
+  user@host:/home/user/website$ cat goodbye.html 
+  <h1>Goodbye World!</h1>
+  <p>See you soon!</p>
+
+Now we invoke Pebble again. Note that if <tt>dst-dir</tt> already exists, you 
+are asked if you want to overwrite everything in this directory. In case you 
+started Pebble with the "<tt>-f</tt>" or "<tt>--force</tt>" option, the 
+overwriting would be forced and no question asked.
+
+  user@host:/home/user/website$ ls
+  default.layout  goodbye.html  index.html
+  user@host:/home/user/website$ pebble
+  Are you sure to overwrite directory '/home/user/rendered_website' [yN] ? y
+  user@host:/home/user/website$ cd ../rendered_website/
+  user@host:/home/user/rendered_website$ ls
+  goodbye.html  index.html
+
+What happened is pretty obvious, but let us first see the contents of the two 
+generated files before asking ourselves, how Pebble knew what layout to use. 
+Note too: Pebble tries to keep the correct indendations so that also the 
+generated files look nice.
+
+  user@host:/home/user/rendered_website$ cat index.html 
+  <html>
+    <head>
+      <title>Web Project1</title>
+    </head>
+    <body>
+      <h1>Hello World!</h1>
+    </body>
+  </html>
+  user@host:/home/user/rendered_website$ cat goodbye.html 
+  <html>
+    <head>
+      <title>Web Project1</title>
+    </head>
+    <body>
+      <h1>Goodbye World!</h1>
+      <p>See you soon!</p>
+    </body>
+  </html>
+
+As you have probably seen, there is no indication in the HTML files upon which 
+Pebble applies a layout. This information is solely taken from files having the 
+extension "<tt>.layout</tt>". Layouts can be nested and are chosen by using six 
+steps to find the appropriate layouts for a specific page (Sorry, I don't know
+how to correctly make numbered bullets in rdoc): 
+
+* Search in the same directory as our page stands for a layout named 
+  <tt>[pagename].layout</tt> (for our page <tt>index.html</tt> this would be 
+  <tt>index.layout</tt>). If Pebble finds this file, it is used exclusively for 
+  the page, otherwise it will continue searching.
+
+* Search in the same directory as our page stands for a layout named 
+  <tt>[pagename].follow.layout</tt>. If Pebble finds this file, it is used 
+  non-exclusively and the search continues.
+
+* Search in the same directory as our page stands for a layout named 
+  <tt>default.layout</tt>. If Pebble finds this file, it is used together with 
+  possible layouts found in step 2. Otherwise the search continues.
+
+* Search in the same directory as our page stands for a layout named 
+  <tt>default.follow.layout</tt>. If Pebble finds this file, it is used together 
+  with possible layouts found in step 2. The search continues.
+
+* If we are not in the current directory, we are searching in the parent 
+  directories for a layout named <tt>default.layout</tt>. If it finds this 
+  file, it is used as the first layout in the chain of nested layouts already 
+  found. Otherwise the search continues.
+
+* In the same directories as in step 5 we are searching for a layout named 
+  <tt>default.follow.layout</tt>. If it finds this file, it is added to the 
+  layout chain. We continue searching in step 5.
+
+Ok, this is gray theory and looks kind of complicated. Have a look at the 
+following example and then reread the above list. Be promised that it will make 
+perfect sense. The layouts are numbered to then show you the chain of layouts 
+for the different pages. 
+
+  user@host:/home/user/website$ ls -1
+  default.layout                                          (1)
+  index.html                                              (A)
+  index.layout                                            (2)
+  subproj/
+  user@host:/home/user/website$ cd subproj/
+  user@host:/home/user/website/subproj$ ls -1
+  goodbye.html                                            (B)
+  index.follow.layout                                     (3)
+  index.html                                              (C)
+
+The following rules apply:
+
+* Page (A) uses layout (2) as its only layout (according to step 1).
+* Page (B) uses layout (1) as its only layout (according to step 5).
+* Page (C) uses layout (3) according to step 2 and layout (1) according to 
+  step 5. Note that layout (1) is the outer most layout, then its 
+  <tt>{{ content }}</tt> tag is replaced by layout (3), whose 
+  <tt>{{ content }}</tt> tag is then replaced by the contents of the page.
+
+=== Slots
+
+Credulous people, I shamefully have to admit something: I lied to you! Not all 
+<tt>*.html</tt> files are pages that are rendered the way I told you. In my 
+defence, I can only say that if I had told you earlier, you would have been more 
+confused. And I was hoping that after what I would tell you about slots, you 
+would not blame me that harshly anymore.
+
+We've already got to know the <tt>{{ content }}</tt> tag, which renders the 
+contents of a page (which is either another layout or a page). However this tag 
+has a little brother <tt>{{ content "[name]" }}</tt>. It is used to render 
+special slots of a page. One obvious use is a sidebar. It is somehow linked to a 
+page and therefore you will see the naming conventions used. Slots are named the 
+same as pages, but having before the <tt>.html</tt> extension the name of the 
+slot. Here I created a directory listing with a page named <tt>shame.html</tt> 
+having slots named "sidebar" and "links", together with some other interesting 
+stuff I will explain shortly: 
+
+  user@host:/home/user/website$ ls -1
+  default.layout
+  default.sidebar.html
+  index.html
+  index.layout
+  shame.html
+  shame.links.html
+  shame.sidebar.html
+
+  user@host:/home/user/website$ cat default.layout 
+  <html>
+    <head>
+      <title>Web Project1</title>
+    </head>
+    <body>
+      <div id="header">
+        {{ content "links" }}
+      </div>
+      <div id="sidebar">
+        {{ content "sidebar" }}
+      </div>
+      {{ content }}
+    </body>
+  </html>
+
+No surprises after rendering shame.html (even though I didn't show you the 
+contents of the different files):
+
+  user@host:/home/user/rendered_website$ cat shame.html 
+  <html>
+    <head>
+      <title>Web Project1</title>
+    </head>
+    <body>
+      <div id="header">
+        <a href="http://www.sorry.com">Sorry</a>
+      </div>
+      <div id="sidebar">
+        <p>Excuses rock!</p>
+      </div>
+      <h1>I'm sooo Sorry!</h1>
+    </body>
+  </html>
+
+Here I show you how index.html is rendered. Afterwards I'll explain you why.
+
+  user@host:/home/user/rendered_website$ cat index.html 
+  <html>
+    <head>
+      <title>Web Project1</title>
+    </head>
+    <body>
+      <div id="header">
+      </div>
+      <div id="sidebar">
+        <p>Only cowards and weaklings need to say sorry!</p>
+      </div>
+      <h1>Hello World!</h1>
+    </body>
+  </html>
+
+Looking for slots is much easier than finding layouts. First of all, Pebble only 
+looks in the same directory as the page is in. Then it collects all possible 
+slots in the following two step process.
+
+* It searches for all files <tt>[pagename].*.html</tt>.
+
+* It searches for all files <tt>default.*.html</tt>. If the name that matches 
+  the asterisk in already contained in the list, this new one is discarded.
+
+If the slot tag is found, Pebble looks in its slot list for this page if a
+matching file is found. If not it puts out a warning, leaves this part blank and 
+continues. 
+
+=== Snippets
+
+As the last step of rendering a page, every instance of 
+<tt>{{ snippet "[name]" }}</tt> will be replaced by its corresponding snippet 
+file. A snippet file - you smarties have already figured it out - looks like 
+<tt>[name].snippet</tt>. The tag can be either in pages, layouts or slots. 
+Snippets are just copied as-is to the corresponding place without any rendering 
+being applied to them (a.k.a. no tags allowed in snippets). Check this out:
+
+  user@host:/home/user/website$ cat final.html
+  <h1>Final rendering step!</h1>
+  {{ snippet "annoying" }} 
+  user@host:/home/user/website$ cat annoying.snippet
+  <p><b>Pebble rocks!</b></p>
+  user@host:/home/user/website$ cat default.layout
+  <html>
+    <head>
+      <title>Web Project1</title>
+    </head>
+    <body>
+      {{ content }}
+      <hr />
+      {{ snippet "annoying" }}
+    </body>
+  </html> 
+
+This render <tt>final.html</tt> to this:
+
+  user@host:/home/user/rendered_website$ cat final.html
+  <html>
+    <head>
+      <title>Web Project1</title>
+    </head>
+    <body>
+      <h1>Final rendering step!</h1>
+      <p><b>Pebble rocks!</b></p>
+      <hr />
+      <p><b>Pebble rocks!</b></p>
+    </body>
+  </html> 
+
+To a particular page being rendered, every snippet in its own and all parent 
+directories are known. If two or more snippets with the same name exist in 
+different directories, the one closest to the page will be used. Let's look at 
+an example (We assume that every page wants to include a snippet with the name 
+"take_me" and one with "me_too"):
+
+  user@host:/home/user/website$ ls -1
+  index.html                                              (A)
+  subproj/
+  take_me.snippet                                         (1)
+  user@host:/home/user/website$ cd subproj/
+  user@host:/home/user/website/subproj$ ls -1
+  final.html                                              (B)
+  me_too.snippet                                          (2)
+  subusub/
+  take_me.snippet                                         (3)
+  user@host:/home/user/website/subproj$ cd subusub/
+  user@host:/home/user/website/subproj/subusub$ ls -1
+  deepspace.html                                          (C)
+  me_too.snippet                                          (4)
+
+The rules apply as follows:
+
+* Page (A) uses snippet (1). A snippet with name "me_too" is not found.
+
+* Page (B) uses snippets (2) and (3).
+
+* Page (C) uses snippets (2) and (4).
+
+In case a snippet-tag is found and no corresonding file to render, a warning is 
+shown and the space will remain empty. 
+
+=== Static Files
+
+Now we come to the easiest part - the static files. In my pretty fancy Pebble 
+terminology, static files refer to everything except the pages 
+(<tt>*.html</tt>), slots (<tt>*.[slotname].html</tt>), layouts 
+(<tt>*.layout</tt>) and snippets (<tt>*.snippet</tt>). All static files are 
+copied to the destination without any changes. Typical candidates are images, 
+stylesheets or javascripts. 
+
+=== Round Up
+
+The rendering sequence is happening exactly in the steps described. This 
+implicates that the different parts can hold more or less tags. Here is a last 
+round up:
+
+* Layouts can hold <tt>{{ content }}</tt>, <tt>{{ content "[name]" }}</tt> and 
+  <tt>{{ snippet "[name]" }}</tt>.
+
+* Pages and slots can hold <tt>{{ snippet "[name]" }}</tt>.
+
+* Snippets can't hold any tags.
+
+From the 'to-be-rendered'-pages point of view, the different parts are searched 
+for in different directories:
+
+* Layouts are recursively searched in this and all parent directories.
+
+* Slots are searched only in this directory.
+
+* Snippets are recursively searched in this and all parent directories.
+
+This is all that can be said about Pebble in its current version. As soon as 
+I've implemented one of my ideas (cf. Road Map), this guide will be updated.
+
+== Road Map / Brainstorm
+
+* The first few versions have been an ugly hack and therefore Pebble is 
+  currently undergoing a major refactoring.
+
+* A possibility of dynamically creating content. One way would be a 
+  <tt>{{ run "[filename]" }}</tt> tag that runs the file given. The output of 
+  this file should be a string that can be imported into the page.
+
+* Some kind of configuration files where one could define short strings 
+  depending on the page and then insert the correct one. 
+
+* Nicely cooperate with localized versions of HTML files which look like 
+  <tt>index.en.html</tt>. At the moment this interferes with Pebble's slots.
+
+* Automatic deployment. Maybe internally through FTP or SSH or just by giving an 
+  option to start an external script with different useful options like the path 
+  of the destination root.
+
+* Way to change links in layouts or snippets. At the moment, they are not 
+  touched. This might sometimes cause problems if the layout is not in the same 
+  directory as the HTML page. 
+
+== License
+
+Pebble is available under the MIT license:
+
+:include: LICENSE
+
+== Contact
+
+Please post bugs, suggestions and patches to the bug tracker at 
+<http://github.com/dinkel/pebble/issues>.
