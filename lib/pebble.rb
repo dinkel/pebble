@@ -33,8 +33,6 @@
 # as a library via a require statement and invoked using the +pebble+ 
 # executable.
 
-require 'find'
-require 'fileutils'
 require 'pebble/site'
 require 'pebble/cli_parser'
 require 'pebble/crawler'
@@ -42,34 +40,6 @@ require 'pebble/render_item'
 require 'pebble/layout_render_item'
 require 'pebble/render_seq'
 require 'pebble/version'
-
-###############################################################################
-# Some extensions to Dir
-#
-class Dir
-
-  # Recursively delete a directory tree including files (like rm -rf)
-  def Dir.rmdir_rec(dir)
-    Dir.foreach(dir) do |e|
-      next if [".", ".."].include? e
-      fullname = dir + File::Separator + e
-      if FileTest::directory?(fullname)
-        Dir.rmdir_rec(fullname)
-      else
-        File.delete(fullname)
-      end
-    end
-    Dir.delete(dir)
-  end
-
-  # Recursively create directories (like mkdir -p)
-  def Dir.mkdir_rec(dir)
-    parent = File.expand_path(File.join(dir, ".."))
-    Dir.mkdir_rec(File.expand_path(File.join(dir, ".."))) unless File.directory?(parent)
-    Dir.mkdir(dir)
-  end
-
-end
 
 ##############################################################################
 # Pebble module

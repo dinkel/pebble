@@ -1,3 +1,5 @@
+require 'fileutils'
+
 module Pebble
 
   class Site
@@ -41,7 +43,7 @@ module Pebble
           print "Are you sure to overwrite directory '#{@rendered_root}' [yN] ? "
           exit unless $stdin.gets.chomp.downcase == 'y'
         end
-        Dir.rmdir_rec(@rendered_root)
+        FileUtils.rm_r(@rendered_root, :secure => true)
       end
     end
 
@@ -50,7 +52,7 @@ module Pebble
     
       files.each do |file|
         target = get_and_prepare_target(file)
-        File.cp(file, target)
+        FileUtils.cp(file, target)
       end
               
     end
@@ -60,7 +62,7 @@ module Pebble
     def get_and_prepare_target(source)
       filename = source.sub(@site_root, @rendered_root)
       dirname = File.dirname(filename)
-      Dir.mkdir_rec(dirname) unless File.directory?(dirname)
+      FileUtils.mkdir_p(dirname) unless File.directory?(dirname)
       filename
     end
 

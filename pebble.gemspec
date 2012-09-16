@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.description = 'A simple static CMS'
   s.author      = 'Christian Luginbuehl'
   s.email       = 'dinkel@pimprecords.com'
-#  s.homepage    = 'http://dinkel.pimprecords.com/pebble/'
+  s.homepage    = 'https://github.com/dinkel/pebble/'
   s.files       = Dir['lib/**/*.rb']
 #  s.require_path  =   "lib"
 #  s.autorequire   =   "pebble"
